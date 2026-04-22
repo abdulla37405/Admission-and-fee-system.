@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academy Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --border: #1e2d45;
+      --accent: #00c896;
+      --accent2: #0084ff;
+      --accent3: #ff6b35;
+      --text: #e8f0fe;
+      --muted: #6b7a99;
+      --paid: #00c896;
+      --freeze: #0084ff;
+      --unpaid: #ff6b35;
+      --left: #6b7a99;
+      --defaulter: #ff3b5c;
+      --sponsored: #a78bfa;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 2px;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .nav {
+      padding: 12px 0;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: var(--surface2);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .nav-icon {
+      font-size: 18px;
+      width: 22px;
+      text-align: center;
+    }
+
+    /* Main */
+    .main {
+      margin-left: 220px;
+      min-height: 100vh;
+      padding: 28px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* Header */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+
+    .stat-card.green::before {
+      background: var(--paid);
+    }
+
+    .stat-card.blue::before {
+      background: var(--freeze);
+    }
+
+    .stat-card.orange::before {
+      background: var(--unpaid);
+    }
+
+    .stat-card.red::before {
+      background: var(--defaulter);
+    }
+
+    .stat-card.gray::before {
+      background: var(--left);
+    }
+
+    .stat-card.purple::before {
+      background: var(--sponsored);
+    }
+
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 38px;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px 10px 38px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: var(--accent);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0e1a;
+    }
+
+    .btn-primary:hover {
+      background: #00e6aa;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--defaulter);
+      border: 1px solid var(--defaulter);
+    }
+
+    .btn-danger:hover {
+      background: var(--defaulter);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    /* Table */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: var(--surface2);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: var(--surface2);
+    }
+
+    td {
+      padding: 12px 16px;
+      font-size: 14px;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-PAID {
+      background: #00c89620;
+      color: var(--paid);
+      border: 1px solid #00c89640;
+    }
+
+    .badge-FREEZE {
+      background: #0084ff20;
+      color: var(--freeze);
+      border: 1px solid #0084ff40;
+    }
+
+    .badge-UNPAID {
+      background: #ff6b3520;
+      color: var(--unpaid);
+      border: 1px solid #ff6b3540;
+    }
+
+    .badge-LEFT {
+      background: #6b7a9920;
+      color: var(--left);
+      border: 1px solid #6b7a9940;
+    }
+
+    .badge-DEFAULTER {
+      background: #ff3b5c20;
+      color: var(--defaulter);
+      border: 1px solid #ff3b5c40;
+    }
+
+    .badge-SPONSORED {
+      background: #a78bfa20;
+      color: var(--sponsored);
+      border: 1px solid #a78bfa40;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .page-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+
+    .page-btn:hover,
+    .page-btn.active {
+      background: var(--accent);
+      color: #0a0e1a;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .page-info {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      width: 90%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+    }
+
+    .modal h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full {
+      grid-column: 1/-1;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    /* Expense / Stock Cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .card-amount {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      color: var(--accent3);
+    }
+
+    .card-meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    /* Progress bar */
+    .prog-bar {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s;
+    }
+
+    /* Dashboard chart-like */
+    .chart-row {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+      height: 80px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      min-height: 4px;
+      transition: height 0.4s;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent);
+      color: #0a0e1a;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      z-index: 9999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    /* Summary section */
+    .summary-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .summary-card {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .summary-card h4 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .summary-card .big {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      background: var(--surface2);
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    input[type=number]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    @media(max-width:768px) {
+      .sidebar {
+        width: 60px;
+      }
+
+      .logo-title,
+      .logo-sub,
+      .nav-item span {
+        display: none;
+      }
+
+      .nav-item {
+        padding: 14px;
+        justify-content: center;
+      }
+
+      .main {
+        margin-left: 60px;
+        padding: 16px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-title">⚡ AMS</div>
+      <div class="logo-sub">Academy Manager</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="navigate('dashboard')"><span
+          class="nav-icon">🏠</span><span>Dashboard</span></div>
+      <div class="nav-item" onclick="navigate('students')"><span class="nav-icon">👤</span><span>Students</span></div>
+      <div class="nav-item" onclick="navigate('fees')"><span class="nav-icon">💰</span><span>Fee Management</span></div>
+      <div class="nav-item" onclick="navigate('expenses')"><span class="nav-icon">📊</span><span>Expenses</span></div>
+      <div class="nav-item" onclick="navigate('stock')"><span class="nav-icon">🏏</span><span>Stock / Inventory</span>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub" id="dash-month-sub">Academy overview</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <select id="dash-year-select" onchange="onDashYearChange()" style="width:110px;"></select>
+          <select id="dash-month-select" onchange="renderDashboard()" style="width:150px;">
+            <option value="">All Months</option>
+          </select>
+        </div>
+      </div>
+      <div class="stats-grid" id="dash-stats"></div>
+      <div class="summary-row">
+        <div class="summary-card">
+          <h4>💵 Total Fees Collected</h4>
+          <div class="big green" id="dash-total-fees" style="color:var(--paid)">—</div>
+          <div class="card-meta" id="dash-fee-sub"></div>
+        </div>
+        <div class="summary-card">
+          <h4>📦 Stock Items</h4>
+          <div class="big" id="dash-stock-count" style="color:var(--freeze)">—</div>
+          <div class="card-meta" id="dash-stock-sub"></div>
+        </div>
+        <div class="summary-card">
+          <h4>✅ Net Balance</h4>
+          <div class="big" id="dash-net" style="color:var(--accent)">—</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="dash-bottom">
+        <div class="table-wrap" style="padding:20px;">
+          <div style="font-weight:700;margin-bottom:14px;font-size:15px;">Payment Status Breakdown</div>
+          <div id="status-breakdown"></div>
+        </div>
+        <div class="table-wrap" style="padding:20px;">
+          <div style="font-weight:700;margin-bottom:14px;font-size:15px;">Age Group Distribution</div>
+          <div id="age-breakdown"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div class="page" id="page-students">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Students</div>
+          <div class="page-sub" id="student-count-sub"></div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddStudent()">+ Add Student</button>
+      </div>
+      <div class="controls">
+        <div class="search-box" style="max-width:300px;">
+          <input type="text" id="student-search" placeholder="Search by name, guardian..." oninput="renderStudents()">
+        </div>
+        <select id="filter-status" onchange="renderStudents()">
+          <option value="">All Status</option>
+          <option>PAID</option>
+          <option>FREEZE</option>
+          <option>UNPAID</option>
+          <option>DEFAULTER</option>
+          <option>LEFT</option>
+          <option>SPONSORED</option>
+        </select>
+        <select id="filter-age" onchange="renderStudents()">
+          <option value="">All Ages</option>
+          <option>Kids</option>
+          <option>U-8</option>
+          <option>U-10</option>
+          <option>U-12</option>
+          <option>U-14</option>
+          <option>U-16</option>
+          <option>U-18</option>
+          <option>U-20</option>
+          <option>Girls</option>
+        </select>
+        <select id="filter-session" onchange="renderStudents()">
+          <option value="">All Sessions</option>
+          <option>Weekends</option>
+          <option>Weekdays</option>
+          <option>Both</option>
+        </select>
+        <select id="filter-month" onchange="renderStudents()">
+          <option value="">All Months</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Guardian</th>
+              <th>Age</th>
+              <th>Session</th>
+              <th>Status</th>
+              <th>Fee (PKR)</th>
+              <th>Contact</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="students-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="student-pagination"></div>
+    </div>
+
+    <!-- FEE MANAGEMENT -->
+    <div class="page" id="page-fees">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Fee Management</div>
+          <div class="page-sub">Track payments and dues</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddPayment()">+ Record Payment</button>
+      </div>
+      <div class="stats-grid" id="fee-stats" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))"></div>
+      <div class="controls">
+        <div class="search-box" style="max-width:280px;">
+          <input type="text" id="fee-search" placeholder="Search student..." oninput="renderFees()">
+        </div>
+        <select id="fee-status-filter" onchange="renderFees()">
+          <option value="">All</option>
+          <option>PAID</option>
+          <option>UNPAID</option>
+          <option>DEFAULTER</option>
+        </select>
+        <select id="fee-month-filter" onchange="renderFees()">
+          <option value="">All Months</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Guardian</th>
+              <th>Age</th>
+              <th>Session</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Change Status</th>
+            </tr>
+          </thead>
+          <tbody id="fees-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="fee-pagination"></div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="page" id="page-expenses">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Expenses</div>
+          <div class="page-sub">Monthly expense tracker</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddExpense()">+ Add Expense</button>
+      </div>
+      <div class="stats-grid" id="exp-stats"
+        style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px;"></div>
+      <div class="cards-grid" id="expenses-grid"></div>
+    </div>
+
+    <!-- STOCK -->
+    <div class="page" id="page-stock">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Stock & Inventory</div>
+          <div class="page-sub">Bats, balls, kits and equipment</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddStock()">+ Add Item</button>
+      </div>
+      <div class="stats-grid" id="stock-stats"
+        style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px;"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Category</th>
+              <th>Qty</th>
+              <th>Unit Cost (PKR)</th>
+              <th>Total Value</th>
+              <th>Condition</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="stock-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal-overlay" id="modal-student">
+      <div class="modal">
+        <h3 id="modal-student-title">Add Student</h3>
+        <div class="form-grid">
+          <div class="form-group full"><label>Full Name</label><input id="s-name" placeholder="Muhammad Ali"></div>
+          <div class="form-group"><label>Guardian</label><input id="s-guardian" placeholder="Guardian name"></div>
+          <div class="form-group"><label>Contact</label><input id="s-contact" placeholder="0300-1234567"></div>
+          <div class="form-group"><label>Age Group</label>
+            <select id="s-age">
+              <option>Kids</option>
+              <option>U-8</option>
+              <option>U-10</option>
+              <option>U-12</option>
+              <option>U-14</option>
+              <option>U-16</option>
+              <option>U-18</option>
+              <option>U-20</option>
+              <option>Girls</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Session</label>
+            <select id="s-session">
+              <option>Weekends</option>
+              <option>Weekdays</option>
+              <option>Both</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Status</label>
+            <select id="s-status">
+              <option>UNPAID</option>
+              <option>PAID</option>
+              <option>FREEZE</option>
+              <option>DEFAULTER</option>
+              <option>LEFT</option>
+              <option>SPONSORED</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Fee (PKR)</label><input id="s-fee" type="number" placeholder="5500"></div>
+          <div class="form-group"><label>Fee Date</label><input id="s-feedate" type="date"></div>
+          <div class="form-group full"><label>Month</label><input id="s-month" type="month"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeModal('modal-student')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveStudent()">Save Student</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-expense">
+      <div class="modal">
+        <h3>Add Expense</h3>
+        <div class="form-grid">
+          <div class="form-group full"><label>Title</label><input id="e-title" placeholder="Coaching staff salary">
+          </div>
+          <div class="form-group"><label>Amount (PKR)</label><input id="e-amount" type="number" placeholder="50000">
+          </div>
+          <div class="form-group"><label>Category</label>
+            <select id="e-cat">
+              <option>Salaries</option>
+              <option>Equipment</option>
+              <option>Maintenance</option>
+              <option>Transport</option>
+              <option>Utilities</option>
+              <option>Marketing</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Date</label><input id="e-date" type="date"></div>
+          <div class="form-group full"><label>Description</label><input id="e-desc" placeholder="Details..."></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeModal('modal-expense')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-stock">
+      <div class="modal">
+        <h3>Add Stock Item</h3>
+        <div class="form-grid">
+          <div class="form-group full"><label>Item Name</label><input id="st-name" placeholder="Cricket Bat"></div>
+          <div class="form-group"><label>Category</label>
+            <select id="st-cat">
+              <option>Bats</option>
+              <option>Balls</option>
+              <option>Kits</option>
+              <option>Gloves</option>
+              <option>Pads</option>
+              <option>Helmets</option>
+              <option>Cones</option>
+              <option>Nets</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Quantity</label><input id="st-qty" type="number" placeholder="10"></div>
+          <div class="form-group"><label>Unit Cost (PKR)</label><input id="st-cost" type="number" placeholder="3500">
+          </div>
+          <div class="form-group full"><label>Condition</label>
+            <select id="st-cond">
+              <option>New</option>
+              <option>Good</option>
+              <option>Fair</option>
+              <option>Poor</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeModal('modal-stock')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveStock()">Save Item</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-payment">
+      <div class="modal">
+        <h3>Record Payment</h3>
+        <div class="form-grid">
+          <div class="form-group full"><label>Student Name</label><input id="p-student" placeholder="Type student name"
+              list="student-list-dl">
+            <datalist id="student-list-dl"></datalist>
+          </div>
+          <div class="form-group"><label>Amount (PKR)</label><input id="p-amount" type="number" placeholder="5500">
+          </div>
+          <div class="form-group"><label>Payment Date</label><input id="p-date" type="date"></div>
+          <div class="form-group"><label>Method</label>
+            <select id="p-method">
+              <option>Online</option>
+              <option>Cash</option>
+              <option>Bank Transfer</option>
+            </select>
+          </div>
+          <div class="form-group full"><label>Notes</label><input id="p-notes" placeholder="Receipt no, month..."></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeModal('modal-payment')">Cancel</button>
+          <button class="btn btn-primary" onclick="savePayment()">Save Payment</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+
+      // =================== DATA STORE ===================
+      const API_BASE = 'http://localhost:3001';
+
+      let DB = { students: [], expenses: [], stock: [] };
+
+      let editingStudentId = null;
+      let studentPage = 1; const SPER = 20;
+      let feePage = 1; const FPER = 25;
+
+      // =================== INITIAL DATA FETCH ===================
+      async function fetchData() {
+        try {
+          const res = await fetch(API_BASE + '/api/data');
+          const data = await res.json();
+          DB.students = data.students || [];
+          DB.expenses = data.expenses || [];
+          DB.stock = data.stock || [];
+          
+          buildYearOptions();
+          populateMonthFilters();
+          
+          const activeId = document.querySelector('.page.active')?.id || 'page-dashboard';
+          if (activeId === 'page-dashboard') renderDashboard();
+          else if (activeId === 'page-students') renderStudents();
+          else if (activeId === 'page-fees') renderFees();
+          else if (activeId === 'page-expenses') renderExpenses();
+          else if (activeId === 'page-stock') renderStock();
+        } catch (err) {
+          console.error(err);
+          toast('Failed to load data from server. Ensure backend is running.', '#ff3b5c');
+        }
+      }
+
+      // =================== MONTH OPTIONS HELPER ===================
+      function buildYearOptions() {
+        const currentYear = new Date().getFullYear();
+        const yearSet = new Set(DB.students.map(s => s.month).filter(Boolean).map(m => m.split(' ')[1]).filter(Boolean));
+        yearSet.add(String(currentYear));
+        const sorted = Array.from(yearSet).sort();
+        const sel = document.getElementById('dash-year-select');
+        if (!sel) return;
+        sel.innerHTML = sorted.map(y =>
+          `<option value="${y}"${y === String(currentYear) ? ' selected' : ''}>${y}</option>`
+        ).join('');
+        populateDashMonthSelect();
+      }
+
+      function populateDashMonthSelect() {
+        const sel = document.getElementById('dash-month-select');
+        if (!sel) return;
+        const year = document.getElementById('dash-year-select')?.value || String(new Date().getFullYear());
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const present = new Set(DB.students.filter(s => s.month && s.month.endsWith(year)).map(s => s.month.split(' ')[0]));
+        const opts = ['<option value="">All Months</option>'];
+        monthNames.forEach(m => {
+          if (present.has(m)) opts.push(`<option value="${m}">${m}</option>`);
+        });
+        sel.innerHTML = opts.join('');
+      }
+
+      function onDashYearChange() { populateDashMonthSelect(); renderDashboard(); }
+
+      function getCurrentMonthLabel() {
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const now = new Date();
+        return months[now.getMonth()] + ' ' + now.getFullYear();
+      }
+
+      function getCurrentMonthInput() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      function monthInputToLabel(val) {
+        if (!val) return '';
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const [y, m] = val.split('-');
+        return months[parseInt(m, 10) - 1] + ' ' + y;
+      }
+
+      function monthLabelToInput(label) {
+        if (!label) return '';
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const parts = label.split(' ');
+        if (parts.length < 2) return '';
+        const mIdx = months.indexOf(parts[0]);
+        if (mIdx === -1) return '';
+        return `${parts[1]}-${String(mIdx + 1).padStart(2, '0')}`;
+      }
+
+      function navigate(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if (page === 'dashboard') renderDashboard();
+        if (page === 'students') renderStudents();
+        if (page === 'fees') renderFees();
+        if (page === 'expenses') renderExpenses();
+        if (page === 'stock') renderStock();
+      }
+
+      // =================== DASHBOARD ===================
+      function renderDashboard() {
+        const selectedYear = document.getElementById('dash-year-select')?.value || String(new Date().getFullYear());
+        const selectedMonth = document.getElementById('dash-month-select')?.value || '';
+
+        const subEl = document.getElementById('dash-month-sub');
+        if (subEl) subEl.textContent = 'Academy overview — ' + (selectedMonth ? selectedMonth + ' ' + selectedYear : selectedYear);
+
+        const s = DB.students.filter(x => {
+          if (!x.month) return false;
+          if (!x.month.endsWith(selectedYear)) return false;
+          if (selectedMonth && !x.month.startsWith(selectedMonth)) return false;
+          return true;
+        });
+
+        const counts = { PAID: 0, FREEZE: 0, UNPAID: 0, DEFAULTER: 0, LEFT: 0, SPONSORED: 0 };
+        s.forEach(x => counts[x.status] = (counts[x.status] || 0) + 1);
+        const totalFees = s.filter(x => x.status === 'PAID').reduce((a, x) => a + (x.fee || 0), 0);
+        const stockVal = DB.stock.reduce((a, x) => a + (x.qty || 0) * (x.unitCost || 0), 0);
+
+        document.getElementById('dash-stats').innerHTML = [
+          ['Total Students', s.length, 'blue'],
+          ['Paid', counts.PAID, 'green'],
+          ['Freeze', counts.FREEZE, 'blue'],
+          ['Unpaid', counts.UNPAID + counts.DEFAULTER, 'red'],
+          ['Left', counts.LEFT, 'gray'],
+        ].map(([l, v, c]) => `<div class="stat-card ${c}"><div class="stat-num">${v}</div><div class="stat-label">${l}</div></div>`).join('');
+
+        document.getElementById('dash-total-fees').textContent = 'Rs ' + totalFees.toLocaleString();
+        document.getElementById('dash-fee-sub').textContent = counts.PAID + ' students paid';
+        document.getElementById('dash-stock-count').textContent = DB.stock.length + ' items';
+        document.getElementById('dash-stock-sub').textContent = 'Rs ' + stockVal.toLocaleString() + ' total value';
+
+        const netEl = document.getElementById('dash-net');
+        netEl.textContent = 'Rs ' + totalFees.toLocaleString() + ' collected';
+        netEl.style.color = 'var(--paid)';
+
+        const total = s.length || 1;
+        document.getElementById('status-breakdown').innerHTML = Object.entries(counts).map(([k, v]) => {
+          const colors = { PAID: 'var(--paid)', FREEZE: 'var(--freeze)', UNPAID: 'var(--unpaid)', DEFAULTER: 'var(--defaulter)', LEFT: 'var(--left)', SPONSORED: 'var(--sponsored)' };
+          const pct = Math.round(v / total * 100);
+          return `<div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+        <span>${k}</span><span style="color:var(--muted)">${v} (${pct}%)</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${colors[k] || 'var(--accent)'}"></div></div>
+    </div>`;
+        }).join('');
+
+        const ageCounts = {};
+        s.forEach(x => { ageCounts[x.ageGroup] = (ageCounts[x.ageGroup] || 0) + 1; });
+        document.getElementById('age-breakdown').innerHTML = Object.entries(ageCounts).sort((a, b) => b[1] - a[1]).map(([k, v]) => {
+          const pct = Math.round(v / total * 100);
+          return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+        <span>${k}</span><span style="color:var(--muted)">${v}</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:var(--accent2)"></div></div>
+    </div>`;
+        }).join('');
+      }
+
+      // =================== STUDENTS ===================
+      function populateMonthFilters() {
+        const months = Array.from(new Set(DB.students.map(s => s.month).filter(Boolean))).sort((a, b) => {
+          return new Date(a.replace(' ', '-') + '-01') - new Date(b.replace(' ', '-') + '-01');
+        });
+        ['filter-month', 'fee-month-filter'].forEach(id => {
+          const sel = document.getElementById(id);
+          if (!sel) return;
+          const cur = sel.value;
+          sel.innerHTML = '<option value="">All Months</option>' +
+            months.map(m => `<option value="${m}"${m === cur ? ' selected' : ''}>${m}</option>`).join('');
+        });
+      }
+
+      function getFilteredStudents() {
+        const search = document.getElementById('student-search').value.toLowerCase();
+        const st = document.getElementById('filter-status').value;
+        const ag = document.getElementById('filter-age').value;
+        const se = document.getElementById('filter-session').value;
+        const mo = document.getElementById('filter-month').value;
+        return DB.students.filter(s => {
+          if (st && s.status !== st) return false;
+          if (ag && s.ageGroup !== ag) return false;
+          if (se && s.session && s.session.trim() !== se) return false;
+          if (mo && s.month !== mo) return false;
+          if (search && !s.name.toLowerCase().includes(search) && !(s.guardian && s.guardian.toLowerCase().includes(search)) && !(s.contact && s.contact.includes(search))) return false;
+          return true;
+        });
+      }
+
+      function renderStudents() {
+        const all = getFilteredStudents();
+        const total = all.length;
+        const maxPage = Math.ceil(total / SPER) || 1;
+        if (studentPage > maxPage) studentPage = maxPage;
+        const paged = all.slice((studentPage - 1) * SPER, studentPage * SPER);
+
+        document.getElementById('student-count-sub').textContent = `${total} student${total !== 1 ? 's' : ''} found`;
+
+        const tbody = document.getElementById('students-tbody');
+        if (!paged.length) { tbody.innerHTML = '<tr><td colspan="9"><div class="empty"><div class="empty-icon">🏏</div>No students found</div></td></tr>'; }
+        else {
+          tbody.innerHTML = paged.map((s, i) => `
+      <tr>
+        <td style="color:var(--muted)">${(studentPage - 1) * SPER + i + 1}</td>
+        <td><strong>${s.name}</strong></td>
+        <td style="color:var(--muted)">${s.guardian || '—'}</td>
+        <td><span class="tag">${s.ageGroup || '—'}</span></td>
+        <td><span class="tag">${s.session || '—'}</span></td>
+        <td><span class="badge badge-${s.status}">${s.status}</span></td>
+        <td>${s.fee ? 'Rs ' + s.fee.toLocaleString() : '—'}</td>
+        <td style="font-size:12px;color:var(--muted)">${s.contact || '—'}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="editStudent('${s._id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteStudent('${s._id}')">🗑️</button>
+        </td>
+      </tr>
+    `).join('');
+        }
+
+        renderPagination('student-pagination', studentPage, maxPage, p => { studentPage = p; renderStudents(); });
+      }
+
+      function openAddStudent() {
+        editingStudentId = null;
+        document.getElementById('modal-student-title').textContent = 'Add Student';
+        ['name', 'guardian', 'contact', 'fee', 'feedate'].forEach(f => document.getElementById('s-' + f).value = '');
+        document.getElementById('s-month').value = getCurrentMonthInput();
+        document.getElementById('modal-student').classList.add('open');
+      }
+
+      function editStudent(id) {
+        const s = DB.students.find(x => x._id === id);
+        if (!s) return;
+        editingStudentId = id;
+        document.getElementById('modal-student-title').textContent = 'Edit Student';
+        document.getElementById('s-name').value = s.name || '';
+        document.getElementById('s-guardian').value = s.guardian || '';
+        document.getElementById('s-contact').value = s.contact || '';
+        if(s.ageGroup) document.getElementById('s-age').value = s.ageGroup;
+        if(s.session) document.getElementById('s-session').value = s.session.trim();
+        if(s.status) document.getElementById('s-status').value = s.status;
+        document.getElementById('s-fee').value = s.fee || '';
+        document.getElementById('s-feedate').value = s.feeDate || '';
+        document.getElementById('s-month').value = monthLabelToInput(s.month || getCurrentMonthLabel());
+        document.getElementById('modal-student').classList.add('open');
+      }
+
+      async function saveStudent() {
+        const data = {
+          name: document.getElementById('s-name').value.trim(),
+          guardian: document.getElementById('s-guardian').value.trim(),
+          contact: document.getElementById('s-contact').value.trim(),
+          ageGroup: document.getElementById('s-age').value,
+          session: document.getElementById('s-session').value,
+          status: document.getElementById('s-status').value,
+          fee: parseFloat(document.getElementById('s-fee').value) || 0,
+          feeDate: document.getElementById('s-feedate').value.trim(),
+          month: monthInputToLabel(document.getElementById('s-month').value) || getCurrentMonthLabel(),
+        };
+        if (!data.name) { toast('Please enter student name', '#ff3b5c'); return; }
+        
+        try {
+          if (editingStudentId) {
+            await fetch(`${API_BASE}/api/students/${editingStudentId}`, {
+              method: 'PUT', headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify(data)
+            });
+            toast('Student updated!');
+          } else {
+            await fetch(`${API_BASE}/api/students`, {
+              method: 'POST', headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify(data)
+            });
+            toast('Student added!');
+          }
+          closeModal('modal-student');
+          fetchData();
+        } catch(e) { toast('Error saving student', '#ff3b5c'); }
+      }
+
+      async function deleteStudent(id) {
+        if (!confirm('Delete this student?')) return;
+        try {
+          await fetch(`${API_BASE}/api/students/${id}`, { method: 'DELETE' });
+          toast('Student removed');
+          fetchData();
+        } catch(e) { toast('Error deleting', '#ff3b5c'); }
+      }
+
+      // =================== FEES ===================
+      function renderFees() {
+        const search = document.getElementById('fee-search').value.toLowerCase();
+        const sf = document.getElementById('fee-status-filter').value;
+        const mf = document.getElementById('fee-month-filter').value;
+        let s = DB.students.filter(x => {
+          if (sf) { if (sf === 'UNPAID' && x.status !== 'UNPAID' && x.status !== 'DEFAULTER') return false; if (sf !== 'UNPAID' && x.status !== sf) return false; }
+          if (mf && x.month !== mf) return false;
+          if (search && !x.name.toLowerCase().includes(search)) return false;
+          return true;
+        });
+
+        const base = mf ? DB.students.filter(x => x.month === mf) : DB.students;
+        const totalCollected = base.filter(x => x.status === 'PAID').reduce((a, x) => a + (x.fee || 0), 0);
+        const paidCount = base.filter(x => x.status === 'PAID').length;
+        const unpaidCount = base.filter(x => x.status === 'UNPAID' || x.status === 'DEFAULTER').length;
+        const freezeCount = base.filter(x => x.status === 'FREEZE').length;
+
+        document.getElementById('fee-stats').innerHTML = [
+          ['Collected (PKR)', 'Rs ' + totalCollected.toLocaleString(), 'green'],
+          ['Paid Students', paidCount, 'green'],
+          ['Pending', unpaidCount, 'orange'],
+          ['On Hold (Freeze)', freezeCount, 'blue'],
+        ].map(([l, v, c]) => `<div class="stat-card ${c}"><div class="stat-num" style="font-size:22px;">${v}</div><div class="stat-label">${l}</div></div>`).join('');
+
+        const maxPage = Math.ceil(s.length / FPER) || 1;
+        if (feePage > maxPage) feePage = maxPage;
+        const paged = s.slice((feePage - 1) * FPER, feePage * FPER);
+
+        document.getElementById('fees-tbody').innerHTML = paged.map(x => `
+    <tr>
+      <td><strong>${x.name}</strong></td>
+      <td style="color:var(--muted)">${x.guardian || '—'}</td>
+      <td><span class="tag">${x.ageGroup || '—'}</span></td>
+      <td><span class="tag">${x.session || '—'}</span></td>
+      <td>${x.fee ? 'Rs ' + x.fee.toLocaleString() : '—'}</td>
+      <td style="color:var(--muted)">${x.feeDate || '—'}</td>
+      <td><span class="badge badge-${x.status}">${x.status}</span></td>
+      <td>
+        <select style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;" onchange="changeStatus('${x._id}',this.value)">
+          <option value="">Change...</option>
+          <option>PAID</option><option>UNPAID</option><option>FREEZE</option><option>DEFAULTER</option><option>LEFT</option>
+        </select>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="8"><div class="empty"><div>No records found</div></div></td></tr>';
+
+        renderPagination('fee-pagination', feePage, maxPage, p => { feePage = p; renderFees(); });
+      }
+
+      async function changeStatus(id, status) {
+        if (!status) return;
+        try {
+          await fetch(`${API_BASE}/api/students/${id}`, {
+            method: 'PUT', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ status })
+          });
+          toast('Status updated to ' + status); 
+          fetchData(); 
+        } catch(e) { toast('Error updating', '#ff3b5c'); }
+      }
+
+      function openAddPayment() {
+        const dl = document.getElementById('student-list-dl');
+        dl.innerHTML = DB.students.map(s => `<option value="${s.name}">`).join('');
+        document.getElementById('p-date').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('modal-payment').classList.add('open');
+      }
+
+      async function savePayment() {
+        const name = document.getElementById('p-student').value.trim();
+        const amount = parseFloat(document.getElementById('p-amount').value) || 0;
+        const date = document.getElementById('p-date').value;
+        if (!name) { toast('Enter student name', '#ff3b5c'); return; }
+        const s = DB.students.find(x => x.name.toLowerCase() === name.toLowerCase());
+        if (!s) { toast('Student not found!', '#ff3b5c'); return; }
+
+        try {
+          await fetch(`${API_BASE}/api/students/${s._id}`, {
+            method: 'PUT', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ status: 'PAID', fee: amount || s.fee, feeDate: date })
+          });
+          toast('Payment recorded!');
+          closeModal('modal-payment');
+          fetchData();
+        } catch(e) { toast('Error recording payment', '#ff3b5c'); }
+      }
+
+      // =================== EXPENSES ===================
+      function renderExpenses() {
+        const total = DB.expenses.reduce((a, x) => a + (x.amount || 0), 0);
+        const cats = {};
+        DB.expenses.forEach(x => { cats[x.category] = (cats[x.category] || 0) + (x.amount || 0); });
+        const topCat = Object.entries(cats).sort((a, b) => b[1] - a[1])[0];
+
+        document.getElementById('exp-stats').innerHTML = `
+    <div class="stat-card orange"><div class="stat-num" style="font-size:20px;">Rs ${total.toLocaleString()}</div><div class="stat-label">Total Expenses</div></div>
+    <div class="stat-card blue"><div class="stat-num">${DB.expenses.length}</div><div class="stat-label">Entries</div></div>
+    ${topCat ? `<div class="stat-card gray"><div class="stat-num" style="font-size:18px;">${topCat[0]}</div><div class="stat-label">Top Category</div></div>` : ''}
+  `;
+
+        if (!DB.expenses.length) {
+          document.getElementById('expenses-grid').innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div>No expenses recorded yet</div></div>';
+          return;
+        }
+
+        const catColors = { Salaries: 'var(--accent3)', Equipment: 'var(--accent2)', Maintenance: 'var(--paid)', Transport: 'var(--sponsored)', Utilities: 'var(--muted)', Marketing: '#fbbf24', Other: 'var(--muted)' };
+
+        document.getElementById('expenses-grid').innerHTML = DB.expenses.map(e => `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${e.title}</div>
+          <div class="card-meta">${e.date || ''} • <span style="color:${catColors[e.category] || 'var(--accent)'}">${e.category}</span></div>
+        </div>
+        <div class="card-amount">Rs ${(e.amount || 0).toLocaleString()}</div>
+      </div>
+      ${e.description ? `<div style="font-size:13px;color:var(--muted)">${e.description}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn btn-danger btn-sm" onclick="deleteExpense('${e._id}')">🗑️ Remove</button>
+      </div>
+    </div>
+  `).join('');
+      }
+
+      function openAddExpense() {
+        document.getElementById('e-date').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('modal-expense').classList.add('open');
+      }
+
+      async function saveExpense() {
+        const title = document.getElementById('e-title').value.trim();
+        const amount = parseFloat(document.getElementById('e-amount').value) || 0;
+        if (!title) { toast('Enter expense title', '#ff3b5c'); return; }
+        
+        try {
+          await fetch(`${API_BASE}/api/expenses`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              title, amount, 
+              category: document.getElementById('e-cat').value,
+              date: document.getElementById('e-date').value,
+              description: document.getElementById('e-desc').value.trim()
+            })
+          });
+          toast('Expense added!');
+          closeModal('modal-expense');
+          fetchData();
+        } catch(e) { toast('Error saving expense', '#ff3b5c'); }
+      }
+
+      async function deleteExpense(id) {
+        if (!confirm('Delete this expense?')) return;
+        try {
+          await fetch(`${API_BASE}/api/expenses/${id}`, { method: 'DELETE' });
+          toast('Expense deleted');
+          fetchData();
+        } catch(e) { toast('Error deleting', '#ff3b5c'); }
+      }
+
+      // =================== STOCK ===================
+      function renderStock() {
+        const totalVal = DB.stock.reduce((a, x) => a + (x.qty || 0) * (x.unitCost || 0), 0);
+        const totalQty = DB.stock.reduce((a, x) => a + (x.qty || 0), 0);
+
+        document.getElementById('stock-stats').innerHTML = `
+    <div class="stat-card blue"><div class="stat-num" style="font-size:20px;">Rs ${totalVal.toLocaleString()}</div><div class="stat-label">Total Value</div></div>
+    <div class="stat-card green"><div class="stat-num">${DB.stock.length}</div><div class="stat-label">Item Types</div></div>
+    <div class="stat-card gray"><div class="stat-num">${totalQty}</div><div class="stat-label">Total Units</div></div>
+  `;
+
+        const condColor = { New: 'var(--paid)', Good: 'var(--freeze)', Fair: 'var(--unpaid)', Poor: 'var(--defaulter)' };
+
+        document.getElementById('stock-tbody').innerHTML = DB.stock.map(s => `
+    <tr>
+      <td><strong>${s.item}</strong></td>
+      <td><span class="tag">${s.category}</span></td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:22px;">${s.qty}</td>
+      <td>Rs ${(s.unitCost || 0).toLocaleString()}</td>
+      <td>Rs ${((s.qty || 0) * (s.unitCost || 0)).toLocaleString()}</td>
+      <td><span style="color:${condColor[s.condition] || 'var(--muted)'}">${s.condition}</span></td>
+      <td style="display:flex;gap:6px;align-items:center;">
+        <button class="btn btn-secondary btn-sm" onclick="adjustQty('${s._id}',-1)">−</button>
+        <button class="btn btn-secondary btn-sm" onclick="adjustQty('${s._id}',1)">+</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteStock('${s._id}')">🗑️</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="7"><div class="empty">No stock items</div></td></tr>';
+      }
+
+      function openAddStock() { document.getElementById('modal-stock').classList.add('open'); }
+
+      async function saveStock() {
+        const item = document.getElementById('st-name').value.trim();
+        if (!item) { toast('Enter item name', '#ff3b5c'); return; }
+        
+        try {
+          await fetch(`${API_BASE}/api/stock`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              item,
+              category: document.getElementById('st-cat').value,
+              qty: parseInt(document.getElementById('st-qty').value) || 0,
+              unitCost: parseInt(document.getElementById('st-cost').value) || 0,
+              condition: document.getElementById('st-cond').value
+            })
+          });
+          toast('Stock item added!');
+          closeModal('modal-stock');
+          fetchData();
+        } catch(e) { toast('Error saving stock', '#ff3b5c'); }
+      }
+
+      async function adjustQty(id, delta) {
+        const s = DB.stock.find(x => x._id === id);
+        if (s) { 
+          const newQty = Math.max(0, (s.qty || 0) + delta);
+          try {
+            await fetch(`${API_BASE}/api/stock/${id}`, {
+              method: 'PUT', headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ qty: newQty })
+            });
+            fetchData();
+          } catch(e) { toast('Error adjusting stock qty', '#ff3b5c'); }
+        }
+      }
+
+      async function deleteStock(id) {
+        if (!confirm('Remove this item?')) return;
+        try {
+          await fetch(`${API_BASE}/api/stock/${id}`, { method: 'DELETE' });
+          toast('Item removed');
+          fetchData();
+        } catch(e) { toast('Error removing stock', '#ff3b5c'); }
+      }
+
+      // =================== UTILITIES ===================
+      function renderPagination(containerId, current, max, cb) {
+        const el = document.getElementById(containerId);
+        if (max <= 1) { el.innerHTML = ''; return; }
+        let pages = [];
+        for (let i = 1; i <= max; i++) {
+          if (i === 1 || i === max || Math.abs(i - current) <= 2) pages.push(i);
+          else if (pages[pages.length - 1] !== '...') pages.push('...');
+        }
+        el.innerHTML = `<span class="page-info">${current} of ${max}</span>` +
+          `<button class="page-btn" onclick="(${cb})(${current - 1})" ${current === 1 ? 'disabled' : ''}>‹</button>` +
+          pages.map(p => p === '...' ? `<span style="color:var(--muted);line-height:36px;">…</span>` :
+            `<button class="page-btn${p === current ? ' active' : ''}" onclick="(${cb})(${p})">${p}</button>`
+          ).join('') +
+          `<button class="page-btn" onclick="(${cb})(${current + 1})" ${current === max ? 'disabled' : ''}>›</button>`;
+      }
+
+      function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+      document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+      function toast(msg, bg = 'var(--accent)') {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.style.background = bg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+      }
+
+      function downloadJSON() {
+        const blob = new Blob([JSON.stringify(DB.students, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'students_clean.json';
+        a.click();
+      }
+
+      // Init
+      fetchData(); // Kick off fetch!
+
+    </script>
+</body>
+
+</html>
