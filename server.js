@@ -19,26 +19,26 @@ if (!MONGODB_URI) {
 
 // Each payment is stored as a sub-document — old records are never overwritten
 const PaymentSchema = new mongoose.Schema({
-  fee:        { type: Number, default: 0 },
-  feeDate:    { type: String, default: '' },
-  month:      { type: String, default: '' },
-  status:     { type: String, default: 'PAID' },
-  method:     { type: String, default: 'Cash' },
-  notes:      { type: String, default: '' },
+  fee: { type: Number, default: 0 },
+  feeDate: { type: String, default: '' },
+  month: { type: String, default: '' },
+  status: { type: String, default: 'PAID' },
+  method: { type: String, default: 'Cash' },
+  notes: { type: String, default: '' },
   recordedAt: { type: Date, default: Date.now }
 });
 
 const Student = mongoose.model('Student', new mongoose.Schema({
-  name:     String,
+  name: String,
   guardian: String,
   ageGroup: String,
-  session:  String,
-  contact:  String,
+  session: String,
+  contact: String,
   // Current/latest status snapshot (for quick filtering)
-  status:   { type: String, default: 'UNPAID' },
-  fee:      { type: Number, default: 0 },
-  feeDate:  { type: String, default: '' },
-  month:    { type: String, default: '' },
+  status: { type: String, default: 'UNPAID' },
+  fee: { type: Number, default: 0 },
+  feeDate: { type: String, default: '' },
+  month: { type: String, default: '' },
   // Full payment history — every payment is pushed here
   payments: [PaymentSchema]
 }));
@@ -60,7 +60,7 @@ app.get('/api/data', async (req, res) => {
   try {
     const students = await Student.find({});
     const expenses = await Expense.find({});
-    const stock    = await Stock.find({});
+    const stock = await Stock.find({});
     res.json({ students, expenses, stock });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -117,23 +117,31 @@ app.post('/api/students/:id/payments', async (req, res) => {
 
     if (!alreadySaved && (existing.fee || existing.feeDate || existing.month)) {
       pushOps.push({
-        fee:     existing.fee     || 0,
+        fee: existing.fee || 0,
         feeDate: existing.feeDate || '',
-        month:   existing.month   || '',
-        status:  existing.status  || 'UNPAID',
-        method:  'Cash',
-        notes:   'Migrated from previous record'
+        month: existing.month || '',
+        status: existing.status || 'UNPAID',
+        method: 'Cash',
+        notes: 'Migrated from previous record'
       });
     }
 
     // Now push the new payment
     pushOps.push({ fee, feeDate, month, status: status || 'PAID', method, notes });
 
+    // Build $set carefully — never touch joinMonth
+    const setFields = { fee, feeDate, month, status: status || 'PAID' };
+
+    // If student has no joinMonth yet, set it from their existing month (migration)
+    if (!existing.joinMonth && existing.month) {
+      setFields.joinMonth = existing.month;
+    }
+
     const student = await Student.findByIdAndUpdate(
       req.params.id,
       {
         $push: { payments: { $each: pushOps } },
-        $set:  { fee, feeDate, month, status: status || 'PAID' }
+        $set: setFields
       },
       { new: true }
     );
@@ -151,12 +159,12 @@ app.put('/api/students/:id/payments/:paymentId', async (req, res) => {
       { _id: req.params.id, 'payments._id': req.params.paymentId },
       {
         $set: {
-          'payments.$.fee':     fee,
+          'payments.$.fee': fee,
           'payments.$.feeDate': feeDate,
-          'payments.$.month':   month,
-          'payments.$.status':  status,
-          'payments.$.method':  method,
-          'payments.$.notes':   notes,
+          'payments.$.month': month,
+          'payments.$.status': status,
+          'payments.$.method': method,
+          'payments.$.notes': notes,
         }
       },
       { new: true }
@@ -165,10 +173,10 @@ app.put('/api/students/:id/payments/:paymentId', async (req, res) => {
     // Recalculate latest snapshot from most recent payment
     if (student && student.payments.length > 0) {
       const latest = student.payments[student.payments.length - 1];
-      student.fee     = latest.fee;
+      student.fee = latest.fee;
       student.feeDate = latest.feeDate;
-      student.month   = latest.month;
-      student.status  = latest.status;
+      student.month = latest.month;
+      student.status = latest.status;
       await student.save();
     }
 
@@ -189,16 +197,16 @@ app.delete('/api/students/:id/payments/:paymentId', async (req, res) => {
     if (student) {
       if (student.payments.length > 0) {
         const latest = student.payments[student.payments.length - 1];
-        student.fee     = latest.fee;
+        student.fee = latest.fee;
         student.feeDate = latest.feeDate;
-        student.month   = latest.month;
-        student.status  = latest.status;
+        student.month = latest.month;
+        student.status = latest.status;
       } else {
         // No payments left — reset to UNPAID
-        student.fee     = 0;
+        student.fee = 0;
         student.feeDate = '';
-        student.month   = '';
-        student.status  = 'UNPAID';
+        student.month = '';
+        student.status = 'UNPAID';
       }
       await student.save();
     }
