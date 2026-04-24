@@ -1037,10 +1037,14 @@
               <input id="p-student" placeholder="Type name or guardian..." autocomplete="off"
                 oninput="filterStudentDropdown()" onfocus="filterStudentDropdown()"
                 style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
-              <div id="p-student-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--accent);border-radius:8px;z-index:999;max-height:200px;overflow-y:auto;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
+              <div id="p-student-dropdown"
+                style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--accent);border-radius:8px;z-index:999;max-height:200px;overflow-y:auto;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+              </div>
             </div>
             <input type="hidden" id="p-student-id">
-            <div id="p-student-selected" style="display:none;margin-top:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--accent);border-radius:8px;font-size:13px;color:var(--accent);">✅ <span id="p-student-selected-text"></span></div>
+            <div id="p-student-selected"
+              style="display:none;margin-top:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--accent);border-radius:8px;font-size:13px;color:var(--accent);">
+              ✅ <span id="p-student-selected-text"></span></div>
           </div>
           <div class="form-group"><label>Amount (PKR)</label><input id="p-amount" type="number" placeholder="5500">
           </div>
@@ -1064,11 +1068,13 @@
     <div class="modal-overlay" id="modal-fee-edit">
       <div class="modal">
         <h3>Edit Fee Record</h3>
-        <div style="margin-bottom:16px;color:var(--muted);font-size:14px;">Student: <strong id="fe-name" style="color:var(--text)"></strong></div>
+        <div style="margin-bottom:16px;color:var(--muted);font-size:14px;">Student: <strong id="fe-name"
+            style="color:var(--text)"></strong></div>
         <input type="hidden" id="fe-id">
         <input type="hidden" id="fe-payment-id">
         <div class="form-grid">
-          <div class="form-group"><label>Fee Amount (PKR)</label><input id="fe-fee" type="number" placeholder="5500"></div>
+          <div class="form-group"><label>Fee Amount (PKR)</label><input id="fe-fee" type="number" placeholder="5500">
+          </div>
           <div class="form-group"><label>Fee Date</label><input id="fe-feedate" type="date"></div>
           <div class="form-group full"><label>Status</label>
             <select id="fe-status">
@@ -1333,7 +1339,7 @@
         <td style="color:var(--muted)">${s.guardian || '—'}</td>
         <td><span class="tag">${s.ageGroup || '—'}</span></td>
         <td><span class="tag">${s.session || '—'}</span></td>
-        <td style="font-size:13px;color:var(--accent2)">${s.joinMonth || s.month || '—'}</td>
+        <td style="font-size:13px;color:var(--accent2)">${s.joinMonth || (s.payments && s.payments.length > 0 ? (s.payments.sort((a, b) => new Date(a.recordedAt || 0) - new Date(b.recordedAt || 0))[0].month || s.month) : s.month) || '—'}</td>
         <td style="font-size:12px;color:var(--muted)">${s.contact || '—'}</td>
         <td>
           <button class="btn btn-danger btn-sm" onclick="deleteStudent('${s._id}')">🗑️</button>
@@ -1363,7 +1369,7 @@
         document.getElementById('s-contact').value = s.contact || '';
         if (s.ageGroup) document.getElementById('s-age').value = s.ageGroup;
         if (s.session) document.getElementById('s-session').value = s.session.trim();
-        document.getElementById('s-month').value = monthLabelToInput(s.month || getCurrentMonthLabel());
+        document.getElementById('s-month').value = monthLabelToInput(s.joinMonth || s.month || getCurrentMonthLabel());
         document.getElementById('modal-student').classList.add('open');
       }
 
@@ -1426,13 +1432,15 @@
 
           if (x.payments && x.payments.length > 0) {
             // Sort payments oldest first so history label is on older ones
-            const sorted = [...x.payments].sort((a, b) => new Date(a.recordedAt || 0) - new Date(b.recordedAt || 0));
+            // Sort oldest first → newest last
+            const sorted = [...x.payments].sort((a, b) => new Date(a.recordedAt || a.feeDate || 0) - new Date(b.recordedAt || b.feeDate || 0));
             sorted.forEach((p, idx) => {
               if (sf) {
                 if (sf === 'UNPAID' && p.status !== 'UNPAID' && p.status !== 'DEFAULTER') return;
                 if (sf !== 'UNPAID' && p.status !== sf) return;
               }
               if (mf && p.month !== mf) return;
+              // isLatest = true only for the newest payment (last in sorted array)
               allRows.push({ x, p, isLatest: idx === sorted.length - 1 });
             });
           } else {
@@ -1452,9 +1460,9 @@
           : DB.students.flatMap(x => x.payments && x.payments.length > 0 ? x.payments : [x]);
 
         const totalCollected = statBase.filter(p => p.status === 'PAID').reduce((a, p) => a + (p.fee || 0), 0);
-        const paidCount      = statBase.filter(p => p.status === 'PAID').length;
-        const unpaidCount    = statBase.filter(p => p.status === 'UNPAID' || p.status === 'DEFAULTER').length;
-        const freezeCount    = statBase.filter(p => p.status === 'FREEZE').length;
+        const paidCount = statBase.filter(p => p.status === 'PAID').length;
+        const unpaidCount = statBase.filter(p => p.status === 'UNPAID' || p.status === 'DEFAULTER').length;
+        const freezeCount = statBase.filter(p => p.status === 'FREEZE').length;
 
         document.getElementById('fee-stats').innerHTML = [
           ['Collected (PKR)', 'Rs ' + totalCollected.toLocaleString(), 'green'],
@@ -1547,7 +1555,7 @@
         const fee = parseFloat(document.getElementById('fe-fee').value) || 0;
         const feeDate = document.getElementById('fe-feedate').value;
         const status = document.getElementById('fe-status').value;
-        const editMonth = feeDate ? monthInputToLabel(feeDate.slice(0,7)) : getCurrentMonthLabel();
+        const editMonth = feeDate ? monthInputToLabel(feeDate.slice(0, 7)) : getCurrentMonthLabel();
         const paymentId = document.getElementById('fe-payment-id').value;
         try {
           if (paymentId) {
@@ -1620,7 +1628,7 @@
       }
 
       // Close dropdown when clicking outside
-      document.addEventListener('click', function(e) {
+      document.addEventListener('click', function (e) {
         if (!e.target.closest('#modal-payment')) {
           const dd = document.getElementById('p-student-dropdown');
           if (dd) dd.style.display = 'none';
@@ -1635,9 +1643,9 @@
         const s = DB.students.find(x => x._id === sid);
         if (!s) { toast('Student not found!', '#ff3b5c'); return; }
 
-        const payMonth = date ? monthInputToLabel(date.slice(0,7)) : getCurrentMonthLabel();
+        const payMonth = date ? monthInputToLabel(date.slice(0, 7)) : getCurrentMonthLabel();
         const method = document.getElementById('p-method').value;
-        const notes  = document.getElementById('p-notes').value.trim();
+        const notes = document.getElementById('p-notes').value.trim();
         try {
           await fetch(`${API_BASE}/api/students/${s._id}/payments`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
